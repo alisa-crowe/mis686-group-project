@@ -1,0 +1,145 @@
+CREATE DATABASE Bookstore;
+USE DATABASE Bookstore;
+
+
+DROP TABLE IF EXISTS Author;
+DROP TABLE IF EXISTS Book;
+DROP TABLE IF EXISTS Customer;
+DROP TABLE IF EXISTS Inventory;
+DROP TABLE IF EXISTS Order;
+DROP TABLE IF EXISTS OrderItem;
+DROP TABLE IF EXISTS Payment;
+DROP TABLE IF EXISTS Publisher;
+DROP TABLE IF EXISTS Review;
+DROP TABLE IF EXISTS Returns;
+DROP TABLE IF EXISTS Supplier;
+
+
+CREATE TABLE Author(
+   AuthorID unsigned SMALLINT NOT NULL UNIQUE,
+   FirstName VARCHAR(100) NOT NULL,
+   LastName VARCHAR(100) NOT NULL,
+   Biography VARCHAR(500),
+   DateOfBirth DATETIME NOT NULL,
+   PRIMARY KEY(AuthorID)
+);
+
+
+CREATE TABLE Customer(
+   CustomerID unsigned SMALLINT NOT NULL UNIQUE,
+   FirstName VARCHAR(100) NOT NULL,
+   LastName VARCHAR(100) NOT NULL,
+   Email VARCHAR(100) NOT NULL UNIQUE,
+   Address VARCHAR(300),
+   PhoneNumber VARCHAR(15) NOT NULL,
+   PRIMARY KEY(CustomerID)
+);
+
+
+CREATE TABLE Publisher(
+   PublisherID unsigned SMALLINT NOT NULL UNIQUE,
+   Name VARCHAR(100) NOT NULL,
+   Address VARCHAR(300),
+   PhoneNumber VARCHAR(15) NOT NULL,
+   Email VARCHAR(100) NOT NULL UNIQUE,
+   PRIMARY KEY(PublisherID)
+);
+
+
+CREATE TABLE Supplier(
+   SupplierID unsigned SMALLINT NOT NULL UNIQUE,
+   Name VARCHAR(100) NOT NULL,
+   Address VARCHAR(300),
+   Email VARCHAR(100) NOT NULL UNIQUE,
+   PhoneNumber VARCHAR(15) NOT NULL,
+   PRIMARY KEY(SupplierID)
+);
+
+
+CREATE TABLE Book(
+   BookID unsigned SMALLINT NOT NULL UNIQUE,
+   Title VARCHAR(100),
+   ISBN VARCHAR(13) NOT NULL UNIQUE,
+   AuthorID unsigned SMALLINT NOT NULL,
+   Genre VARCHAR(50),
+   PublisherID SMALLINT NOT NULL,
+   PublicationDate DATETIME NOT NULL,
+   Price SMALLMONEY NOT NULL,
+   QuantityInStock SMALLINT NOT NULL,
+   PRIMARY KEY(BookID),
+   FOREIGN KEY (AuthorID) REFERENCES Author (AuthorID) ON UPDATE CASCADE
+);
+
+
+CREATE TABLE Inventory(
+   InventoryID unsigned SMALLINT NOT NULL UNIQUE,
+   BookID unsigned SMALLINT NOT NULL,
+   QuantityInStock unsigned SMALLINT,
+   SupplierID unsigned SMALLINT NOT NULL,
+   PRIMARY KEY(InventoryID),
+   FOREIGN KEY (BookID) REFERENCES Book (BookID) ON UPDATE CASCADE,
+   FOREIGN KEY (SupplierID) REFERENCES Supplier (SupplierID) ON UPDATE CASCADE
+);
+
+
+CREATE TABLE Order(
+   OrderID unsigned SMALLINT NOT NULL UNIQUE,
+   CustomerID unsigned SMALLINT NOT NULL,
+   OrderDate DATETIME NOT NULL,
+   OrderStatus VARCHAR(50) NOT NULL,
+   TotalAmount MONEY NOT NULL,
+   PaymentMethod VARCHAR(100) NOT NULL,
+   ShippingAddress VARCHAR(500) NOT NULL,
+   PRIMARY KEY(OrderID),
+   FOREIGN KEY (CustomerID) REFERENCES Customer (CustomerID) ON UPDATE CASCADE
+);
+
+
+CREATE TABLE OrderItem(
+   OrderItemID unsigned SMALLINT NOT NULL UNIQUE,
+   OrderID unsigned SMALLINT NOT NULL,
+   BookID unsigned SMALLINT NOT NULL,
+   Quantity unsigned SMALLINT NOT NULL,
+   UnitPrice SMALLMONEY NOT NULL,
+   PRIMARY KEY(OrderItemID),
+   FOREIGN KEY (OrderID) REFERENCES Order (OrderID) ON UPDATE CASCADE,
+   FOREIGN KEY (BookID) REFERENCES Book (BookID) ON UPDATE CASCADE
+);
+
+
+CREATE TABLE Payment(
+   PaymentID unsigned SMALLINT NOT NULL UNIQUE,
+   OrderID unsigned SMALLINT NOT NULL,
+   PaymentMethod VARCHAR(100) NOT NULL,
+   PaymentDate DATETIME NOT NULL,
+   Amount MONEY NOT NULL,
+   PRIMARY KEY(PaymentID),
+   FOREIGN KEY (OrderID) REFERENCES Order (OrderID) ON UPDATE CASCADE
+);
+
+
+CREATE TABLE Review(
+   ReviewID unsigned SMALLINT NOT NULL UNIQUE,
+   BookID unsigned SMALLINT NOT NULL,
+   CustomerID unsigned SMALLINT NOT NULL,
+   Rating unsigned SMALLINT,
+   ReviewDate DATETIME NOT NULL,
+   ReviewText VARCHAR(10000),
+   PRIMARY KEY(ReviewID),
+   FOREIGN KEY (BookID) REFERENCES Book (BookID) ON UPDATE CASCADE,
+   FOREIGN KEY (CustomerID) REFERENCES Customer (CustomerID) ON UPDATE CASCADE,
+   CHECK (Rating IS NOT NULL OR ReviewText IS NOT NULL)
+);
+
+
+CREATE TABLE Returns(
+   ReturnID unsigned SMALLINT NOT NULL UNIQUE,
+   OrderID unsigned SMALLINT NOT NULL,
+   BookID unsigned SMALLINT NOT NULL,
+   ReturnDate DATETIME NOT NULL,
+   QuantityReturned unsigned SMALLINT NOT NULL,
+   Reason VARCHAR(500),
+   PRIMARY KEY(ReturnID),
+   FOREIGN KEY (OrderID) REFERENCES Order (OrderID) ON UPDATE CASCADE,
+   FOREIGN KEY (BookID) REFERENCES Book (BookID) ON UPDATE CASCADE
+);
