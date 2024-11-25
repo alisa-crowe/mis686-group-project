@@ -1,12 +1,12 @@
 CREATE DATABASE Bookstore;
-USE DATABASE Bookstore;
+USE Bookstore;
 
 
 DROP TABLE IF EXISTS Author;
 DROP TABLE IF EXISTS Book;
 DROP TABLE IF EXISTS Customer;
 DROP TABLE IF EXISTS Inventory;
-DROP TABLE IF EXISTS Order;
+DROP TABLE IF EXISTS Orders;
 DROP TABLE IF EXISTS OrderItem;
 DROP TABLE IF EXISTS Payment;
 DROP TABLE IF EXISTS Publisher;
@@ -16,130 +16,256 @@ DROP TABLE IF EXISTS Supplier;
 
 
 CREATE TABLE Author(
-   AuthorID unsigned SMALLINT NOT NULL UNIQUE,
+   AuthorID UNSIGNED SMALLINT NOT NULL UNIQUE,
    FirstName VARCHAR(100) NOT NULL,
    LastName VARCHAR(100) NOT NULL,
    Biography VARCHAR(500),
    DateOfBirth DATETIME NOT NULL,
-   PRIMARY KEY(AuthorID)
+   PRIMARY KEY (AuthorID)
 );
 
 
 CREATE TABLE Customer(
-   CustomerID unsigned SMALLINT NOT NULL UNIQUE,
+   CustomerID UNSIGNED SMALLINT NOT NULL UNIQUE,
    FirstName VARCHAR(100) NOT NULL,
    LastName VARCHAR(100) NOT NULL,
    Email VARCHAR(100) NOT NULL UNIQUE,
    Address VARCHAR(300),
    PhoneNumber VARCHAR(15) NOT NULL,
-   PRIMARY KEY(CustomerID)
+   PRIMARY KEY (CustomerID)
 );
 
 
 CREATE TABLE Publisher(
-   PublisherID unsigned SMALLINT NOT NULL UNIQUE,
+   PublisherID UNSIGNED SMALLINT NOT NULL UNIQUE,
    Name VARCHAR(100) NOT NULL,
    Address VARCHAR(300),
    PhoneNumber VARCHAR(15) NOT NULL,
    Email VARCHAR(100) NOT NULL UNIQUE,
-   PRIMARY KEY(PublisherID)
+   PRIMARY KEY (PublisherID)
 );
 
 
 CREATE TABLE Supplier(
-   SupplierID unsigned SMALLINT NOT NULL UNIQUE,
+   SupplierID UNSIGNED SMALLINT NOT NULL UNIQUE,
    Name VARCHAR(100) NOT NULL,
    Address VARCHAR(300),
    Email VARCHAR(100) NOT NULL UNIQUE,
    PhoneNumber VARCHAR(15) NOT NULL,
-   PRIMARY KEY(SupplierID)
+   PRIMARY KEY (SupplierID)
 );
 
 
 CREATE TABLE Book(
-   BookID unsigned SMALLINT NOT NULL UNIQUE,
+   BookID UNSIGNED SMALLINT NOT NULL UNIQUE,
    Title VARCHAR(100),
    ISBN VARCHAR(13) NOT NULL UNIQUE,
-   AuthorID unsigned SMALLINT NOT NULL,
+   AuthorID UNSIGNED SMALLINT NOT NULL,
    Genre VARCHAR(50),
-   PublisherID SMALLINT NOT NULL,
+   PublisherID UNSIGNED SMALLINT NOT NULL,
    PublicationDate DATETIME NOT NULL,
    Price SMALLMONEY NOT NULL,
    QuantityInStock SMALLINT NOT NULL,
    PRIMARY KEY(BookID),
-   FOREIGN KEY (AuthorID) REFERENCES Author (AuthorID) ON UPDATE CASCADE
+   FOREIGN KEY (AuthorID) REFERENCES Author (AuthorID) 
+ON DELETE SET NULL,
+   FOREIGN KEY (PublisherID) REFERENCES Publisher (PublisherID) 
+ON DELETE SET NULL,
 );
 
 
 CREATE TABLE Inventory(
-   InventoryID unsigned SMALLINT NOT NULL UNIQUE,
-   BookID unsigned SMALLINT NOT NULL,
-   QuantityInStock unsigned SMALLINT,
-   SupplierID unsigned SMALLINT NOT NULL,
+   InventoryID UNSIGNED SMALLINT NOT NULL UNIQUE,
+   BookID UNSIGNED SMALLINT NOT NULL,
+   QuantityInStock UNSIGNED SMALLINT,
+   SupplierID UNSIGNED SMALLINT NOT NULL,
    PRIMARY KEY(InventoryID),
-   FOREIGN KEY (BookID) REFERENCES Book (BookID) ON UPDATE CASCADE,
-   FOREIGN KEY (SupplierID) REFERENCES Supplier (SupplierID) ON UPDATE CASCADE
+   FOREIGN KEY (BookID) REFERENCES Book (BookID)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+   FOREIGN KEY (SupplierID) REFERENCES Supplier (SupplierID)
+	ON DELETE RESTRICT
+	ON UPDATE CASCADE,
+   CHECK (QuantityInStock >= 0)
 );
 
 
-CREATE TABLE Order(
-   OrderID unsigned SMALLINT NOT NULL UNIQUE,
-   CustomerID unsigned SMALLINT NOT NULL,
+CREATE TABLE Orders(
+   OrderID UNSIGNED SMALLINT NOT NULL UNIQUE,
+   CustomerID UNSIGNED SMALLINT NOT NULL,
    OrderDate DATETIME NOT NULL,
    OrderStatus VARCHAR(50) NOT NULL,
    TotalAmount MONEY NOT NULL,
    PaymentMethod VARCHAR(100) NOT NULL,
    ShippingAddress VARCHAR(500) NOT NULL,
    PRIMARY KEY(OrderID),
-   FOREIGN KEY (CustomerID) REFERENCES Customer (CustomerID) ON UPDATE CASCADE
+   FOREIGN KEY (CustomerID) REFERENCES Customer (CustomerID) 
+ON DELETE RESTRICT
 );
 
 
 CREATE TABLE OrderItem(
-   OrderItemID unsigned SMALLINT NOT NULL UNIQUE,
-   OrderID unsigned SMALLINT NOT NULL,
-   BookID unsigned SMALLINT NOT NULL,
-   Quantity unsigned SMALLINT NOT NULL,
+   OrderItemID UNSIGNED SMALLINT NOT NULL UNIQUE,
+   OrderID UNSIGNED SMALLINT NOT NULL,
+   BookID UNSIGNED SMALLINT NOT NULL,
+   Quantity UNSIGNED SMALLINT NOT NULL,
    UnitPrice SMALLMONEY NOT NULL,
    PRIMARY KEY(OrderItemID),
-   FOREIGN KEY (OrderID) REFERENCES Order (OrderID) ON UPDATE CASCADE,
-   FOREIGN KEY (BookID) REFERENCES Book (BookID) ON UPDATE CASCADE
+   FOREIGN KEY (OrderID) REFERENCES Orders (OrderID)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+   FOREIGN KEY (BookID) REFERENCES Book (BookID)
+	ON DELETE RESTRICT
+	ON UPDATE CASCADE,
+   CHECK (Quantity > 0),
+   CHECK (UnitPrice > 0)
 );
 
 
 CREATE TABLE Payment(
-   PaymentID unsigned SMALLINT NOT NULL UNIQUE,
-   OrderID unsigned SMALLINT NOT NULL,
+   PaymentID UNSIGNED SMALLINT NOT NULL UNIQUE,
+   OrderID UNSIGNED SMALLINT NOT NULL,
    PaymentMethod VARCHAR(100) NOT NULL,
    PaymentDate DATETIME NOT NULL,
    Amount MONEY NOT NULL,
    PRIMARY KEY(PaymentID),
-   FOREIGN KEY (OrderID) REFERENCES Order (OrderID) ON UPDATE CASCADE
+   FOREIGN KEY (OrderID) REFERENCES Orders (OrderID) 
+	ON DELETE CASCADE
+ON UPDATE CASCADE,
+   CHECK (Amount > 0)
 );
 
 
 CREATE TABLE Review(
-   ReviewID unsigned SMALLINT NOT NULL UNIQUE,
-   BookID unsigned SMALLINT NOT NULL,
-   CustomerID unsigned SMALLINT NOT NULL,
-   Rating unsigned SMALLINT,
+   ReviewID UNSIGNED SMALLINT NOT NULL UNIQUE,
+   BookID UNSIGNED SMALLINT NOT NULL,
+   CustomerID UNSIGNED SMALLINT NOT NULL,
+   Rating UNSIGNED SMALLINT,
    ReviewDate DATETIME NOT NULL,
    ReviewText VARCHAR(10000),
    PRIMARY KEY(ReviewID),
-   FOREIGN KEY (BookID) REFERENCES Book (BookID) ON UPDATE CASCADE,
-   FOREIGN KEY (CustomerID) REFERENCES Customer (CustomerID) ON UPDATE CASCADE,
-   CHECK (Rating IS NOT NULL OR ReviewText IS NOT NULL)
+   FOREIGN KEY (BookID) REFERENCES Book (BookID)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+   FOREIGN KEY (CustomerID) REFERENCES Customer (CustomerID)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+   CHECK (Rating IS NOT NULL OR ReviewText IS NOT NULL),
+   CHECK (Rating BETWEEN 1 AND 5)
 );
 
 
 CREATE TABLE Returns(
-   ReturnID unsigned SMALLINT NOT NULL UNIQUE,
-   OrderID unsigned SMALLINT NOT NULL,
-   BookID unsigned SMALLINT NOT NULL,
+   ReturnID UNSIGNED SMALLINT NOT NULL UNIQUE,
+   OrderID UNSIGNED SMALLINT NOT NULL,
+   BookID UNSIGNED SMALLINT NOT NULL,
    ReturnDate DATETIME NOT NULL,
-   QuantityReturned unsigned SMALLINT NOT NULL,
+   QuantityReturned UNSIGNED SMALLINT NOT NULL,
    Reason VARCHAR(500),
    PRIMARY KEY(ReturnID),
-   FOREIGN KEY (OrderID) REFERENCES Order (OrderID) ON UPDATE CASCADE,
-   FOREIGN KEY (BookID) REFERENCES Book (BookID) ON UPDATE CASCADE
+   FOREIGN KEY (OrderID) REFERENCES Orders (OrderID)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+   FOREIGN KEY (BookID) REFERENCES Book (BookID)
+	ON DELETE RESTRICT
+	ON UPDATE CASCADE,
+   CHECK (QuantityReturned > 0)
 );
+
+
+CREATE INDEX idx_book_id ON Inventory(BookID);
+
+
+CREATE INDEX idx_supplier_id ON Inventory(SupplierID);
+
+
+CREATE INDEX idx_order_id ON OrderItem(OrderID);
+
+
+CREATE INDEX idx_book_id ON OrderItem(BookID);
+
+
+CREATE INDEX idx_order_id ON Payment(OrderID);
+
+
+CREATE INDEX idx_book_id ON Review(BookID);
+
+
+CREATE INDEX idx_customer_id ON Review(CustomerID);
+
+
+CREATE INDEX idx_order_id ON Returns(OrderID);
+
+
+CREATE INDEX idx_book_id ON Returns(BookID);
+
+
+CREATE VIEW CustomerOrders AS
+SELECT
+   o.OrderID,
+   c.CustomerID,
+   c.FirstName,
+   c.LastName,
+   o.OrderDate,
+   o.OrderStatus,
+   o.TotalAmount
+FROM Orders o
+JOIN Customer c ON o.CustomerID = c.CustomerID;
+
+
+CREATE VIEW BookInventory AS
+SELECT
+   b.BookID,
+   b.Title,
+   b.ISBN,
+   i.QuantityInStock,
+   s.Name AS SupplierName
+FROM Book b
+JOIN Inventory i ON b.BookID = i.BookID
+JOIN Supplier s ON i.SupplierID = s.SupplierID;
+
+
+CREATE VIEW OrderDetails AS
+SELECT
+   o.OrderID,
+   oi.OrderItemID,
+   b.Title,
+   oi.Quantity,
+   oi.UnitPrice,
+   (oi.Quantity * oi.UnitPrice) AS TotalPrice
+FROM Orders o
+JOIN OrderItem oi ON o.OrderID = oi.OrderID
+JOIN Book b ON oi.BookID = b.BookID;
+
+
+CREATE PROCEDURE AddNewOrder(
+   IN p_CustomerID UNSIGNED SMALLINT,
+   IN p_OrderDate DATETIME,
+   IN p_OrderStatus VARCHAR(50),
+   IN p_TotalAmount MONEY,
+   IN p_PaymentMethod VARCHAR(100),
+   IN p_ShippingAddress VARCHAR(500)
+)
+BEGIN
+    INSERT INTO Orders (CustomerID, OrderDate, OrderStatus, TotalAmount, PaymentMethod, ShippingAddress)
+    VALUES (p_CustomerID, p_OrderDate, p_OrderStatus, p_TotalAmount, p_PaymentMethod, p_ShippingAddress);
+END;
+
+
+CREATE PROCEDURE UpdateInventory(
+   IN p_BookID UNSIGNED SMALLINT,
+   IN p_Quantity UNSIGNED SMALLINT,
+)
+BEGIN
+    UPDATE Inventory
+    SET QuantityInStock = QuantityInStock - p_Quantity
+    WHERE BookID = p_BookID;
+END;
+
+
+CREATE TRIGGER AfterOrderItemInsert
+AFTER INSERT ON OrderItem
+FOR EACH ROW
+BEGIN
+    CALL UpdateInventory(NEW.BookID, NEW.Quantity);
+END;
