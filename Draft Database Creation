@@ -16,7 +16,7 @@ DROP TABLE IF EXISTS Supplier;
 
 
 CREATE TABLE Author(
-   AuthorID UNSIGNED SMALLINT NOT NULL UNIQUE,
+   AuthorID SMALLINT NOT NULL UNIQUE,
    FirstName VARCHAR(100) NOT NULL,
    LastName VARCHAR(100) NOT NULL,
    Biography VARCHAR(500),
@@ -26,7 +26,7 @@ CREATE TABLE Author(
 
 
 CREATE TABLE Customer(
-   CustomerID UNSIGNED SMALLINT NOT NULL UNIQUE,
+   CustomerID SMALLINT NOT NULL UNIQUE,
    FirstName VARCHAR(100) NOT NULL,
    LastName VARCHAR(100) NOT NULL,
    Email VARCHAR(100) NOT NULL UNIQUE,
@@ -37,7 +37,7 @@ CREATE TABLE Customer(
 
 
 CREATE TABLE Publisher(
-   PublisherID UNSIGNED SMALLINT NOT NULL UNIQUE,
+   PublisherID SMALLINT NOT NULL UNIQUE,
    Name VARCHAR(100) NOT NULL,
    Address VARCHAR(300),
    PhoneNumber VARCHAR(15) NOT NULL,
@@ -47,7 +47,7 @@ CREATE TABLE Publisher(
 
 
 CREATE TABLE Supplier(
-   SupplierID UNSIGNED SMALLINT NOT NULL UNIQUE,
+   SupplierID SMALLINT NOT NULL UNIQUE,
    Name VARCHAR(100) NOT NULL,
    Address VARCHAR(300),
    Email VARCHAR(100) NOT NULL UNIQUE,
@@ -57,12 +57,12 @@ CREATE TABLE Supplier(
 
 
 CREATE TABLE Book(
-   BookID UNSIGNED SMALLINT NOT NULL UNIQUE,
+   BookID SMALLINT NOT NULL UNIQUE,
    Title VARCHAR(100),
    ISBN VARCHAR(13) NOT NULL UNIQUE,
-   AuthorID UNSIGNED SMALLINT NOT NULL,
+   AuthorID SMALLINT NOT NULL,
    Genre VARCHAR(50),
-   PublisherID UNSIGNED SMALLINT NOT NULL,
+   PublisherID SMALLINT NOT NULL,
    PublicationDate DATETIME NOT NULL,
    Price SMALLMONEY NOT NULL,
    QuantityInStock SMALLINT NOT NULL,
@@ -75,10 +75,10 @@ ON DELETE SET NULL,
 
 
 CREATE TABLE Inventory(
-   InventoryID UNSIGNED SMALLINT NOT NULL UNIQUE,
-   BookID UNSIGNED SMALLINT NOT NULL,
-   QuantityInStock UNSIGNED SMALLINT,
-   SupplierID UNSIGNED SMALLINT NOT NULL,
+   InventoryID SMALLINT NOT NULL UNIQUE,
+   BookID SMALLINT NOT NULL,
+   QuantityInStock SMALLINT,
+   SupplierID SMALLINT NOT NULL,
    PRIMARY KEY(InventoryID),
    FOREIGN KEY (BookID) REFERENCES Book (BookID)
 	ON DELETE CASCADE
@@ -91,8 +91,8 @@ CREATE TABLE Inventory(
 
 
 CREATE TABLE Orders(
-   OrderID UNSIGNED SMALLINT NOT NULL UNIQUE,
-   CustomerID UNSIGNED SMALLINT NOT NULL,
+   OrderID SMALLINT NOT NULL UNIQUE,
+   CustomerID SMALLINT NOT NULL,
    OrderDate DATETIME NOT NULL,
    OrderStatus VARCHAR(50) NOT NULL,
    TotalAmount MONEY NOT NULL,
@@ -105,10 +105,10 @@ ON DELETE RESTRICT
 
 
 CREATE TABLE OrderItem(
-   OrderItemID UNSIGNED SMALLINT NOT NULL UNIQUE,
-   OrderID UNSIGNED SMALLINT NOT NULL,
-   BookID UNSIGNED SMALLINT NOT NULL,
-   Quantity UNSIGNED SMALLINT NOT NULL,
+   OrderItemID  SMALLINT NOT NULL UNIQUE,
+   OrderID  SMALLINT NOT NULL,
+   BookID  SMALLINT NOT NULL,
+   Quantity  SMALLINT NOT NULL,
    UnitPrice SMALLMONEY NOT NULL,
    PRIMARY KEY(OrderItemID),
    FOREIGN KEY (OrderID) REFERENCES Orders (OrderID)
@@ -123,8 +123,8 @@ ON UPDATE CASCADE,
 
 
 CREATE TABLE Payment(
-   PaymentID UNSIGNED SMALLINT NOT NULL UNIQUE,
-   OrderID UNSIGNED SMALLINT NOT NULL,
+   PaymentID  SMALLINT NOT NULL UNIQUE,
+   OrderID  SMALLINT NOT NULL,
    PaymentMethod VARCHAR(100) NOT NULL,
    PaymentDate DATETIME NOT NULL,
    Amount MONEY NOT NULL,
@@ -137,10 +137,10 @@ ON UPDATE CASCADE,
 
 
 CREATE TABLE Review(
-   ReviewID UNSIGNED SMALLINT NOT NULL UNIQUE,
-   BookID UNSIGNED SMALLINT NOT NULL,
-   CustomerID UNSIGNED SMALLINT NOT NULL,
-   Rating UNSIGNED SMALLINT,
+   ReviewID  SMALLINT NOT NULL UNIQUE,
+   BookID  SMALLINT NOT NULL,
+   CustomerID  SMALLINT NOT NULL,
+   Rating  SMALLINT,
    ReviewDate DATETIME NOT NULL,
    ReviewText VARCHAR(10000),
    PRIMARY KEY(ReviewID),
@@ -156,11 +156,11 @@ ON UPDATE CASCADE,
 
 
 CREATE TABLE Returns(
-   ReturnID UNSIGNED SMALLINT NOT NULL UNIQUE,
-   OrderID UNSIGNED SMALLINT NOT NULL,
-   BookID UNSIGNED SMALLINT NOT NULL,
+   ReturnID  SMALLINT NOT NULL UNIQUE,
+   OrderID  SMALLINT NOT NULL,
+   BookID  SMALLINT NOT NULL,
    ReturnDate DATETIME NOT NULL,
-   QuantityReturned UNSIGNED SMALLINT NOT NULL,
+   QuantityReturned  SMALLINT NOT NULL,
    Reason VARCHAR(500),
    PRIMARY KEY(ReturnID),
    FOREIGN KEY (OrderID) REFERENCES Orders (OrderID)
@@ -198,6 +198,51 @@ CREATE INDEX idx_order_id ON Returns(OrderID);
 
 
 CREATE INDEX idx_book_id ON Returns(BookID);
+
+
+INSERT INTO Author (AuthorID, FirstName, LastName, Biography, DateOfBirth) VALUES
+(1, 'John', 'Doe', 'John Doe is a prolific author of mystery novels.', '1970-01-15'),
+(2, 'Jane', 'Smith', 'Jane Smith writes science fiction and fantasy.', '1980-05-22');
+
+
+INSERT INTO Customer (CustomerID, FirstName, LastName, Email, Address, PhoneNumber) VALUES
+(1, 'Alice', 'Johnson', 'alice.johnson@example.com', '123 Main St, Anytown, USA', '555-1234'),
+(2, 'Bob', 'Williams', 'bob.williams@example.com', '456 Oak St, Anytown, USA', '555-5678');
+
+
+INSERT INTO Publisher (PublisherID, Name, Address, PhoneNumber, Email) VALUES
+(1, 'Mystery House', '789 Pine St, Anytown, USA', '555-8765', 'contact@mysteryhouse.com'),
+(2, 'Sci-Fi World', '101 Maple St, Anytown, USA', '555-4321', 'info@scifiworld.com');
+
+
+INSERT INTO Supplier (SupplierID, Name, Address, Email, PhoneNumber) VALUES
+(1, 'Book Distributors Inc.', '202 Elm St, Anytown, USA', 'sales@bookdistributors.com', '555-9876'),
+(2, 'Global Books', '303 Birch St, Anytown, USA', 'support@globalbooks.com', '555-6543');
+
+
+INSERT INTO Book (BookID, Title, ISBN, AuthorID, Genre, PublisherID, PublicationDate, Price, QuantityInStock) VALUES
+(1, 'Mystery at the Mansion', '1234567890123', 1, 'Mystery', 1, '2022-01-01', 19.99, 50),
+(2, 'Journey to Mars', '9876543210987', 2, 'Science Fiction', 2, '2023-05-15', 24.99, 30);
+
+
+INSERT INTO Inventory (InventoryID, BookID, QuantityInStock, SupplierID) VALUES
+(1, 1, 50, 1),
+(2, 2, 30, 2);
+
+
+INSERT INTO Orders (OrderID, CustomerID, OrderDate, OrderStatus, TotalAmount, PaymentMethod, ShippingAddress) VALUES
+(1, 1, '2024-11-01', 'Shipped', 39.98, 'Credit Card', '123 Main St, Anytown, USA'),
+(2, 2, '2024-11-02', 'Processing', 24.99, 'PayPal', '456 Oak St, Anytown, USA');
+
+
+INSERT INTO OrderItem (OrderItemID, OrderID, BookID, Quantity, UnitPrice) VALUES
+(1, 1, 1, 2, 19.99),
+(2, 2, 2, 1, 24.99);
+
+
+INSERT INTO Payment (PaymentID, OrderID, PaymentMethod, PaymentDate, Amount) VALUES
+    (1, 1, 'Credit Card', '2024-11-01', 39.98),
+    (2, 2, 'PayPal', '2024-11-02', 24.99);
 
 
 CREATE VIEW CustomerOrders AS
@@ -239,7 +284,7 @@ JOIN Book b ON oi.BookID = b.BookID;
 
 
 CREATE PROCEDURE AddNewOrder(
-   IN p_CustomerID UNSIGNED SMALLINT,
+   IN p_CustomerID  SMALLINT,
    IN p_OrderDate DATETIME,
    IN p_OrderStatus VARCHAR(50),
    IN p_TotalAmount MONEY,
@@ -253,8 +298,8 @@ END;
 
 
 CREATE PROCEDURE UpdateInventory(
-   IN p_BookID UNSIGNED SMALLINT,
-   IN p_Quantity UNSIGNED SMALLINT,
+   IN p_BookID  SMALLINT,
+   IN p_Quantity  SMALLINT,
 )
 BEGIN
     UPDATE Inventory
